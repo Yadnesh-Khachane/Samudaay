@@ -2,7 +2,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { MetricCard, ProgressBar, StatusBadge } from "@/components/ui/metric-card";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import {
   LayoutDashboard, Search, Wallet, History, FileText, MessageCircle, Settings,
   TrendingUp, CalendarClock, IndianRupee, Star, MapPin, ArrowRight,
@@ -10,10 +10,10 @@ import {
   Smartphone, Shield, Lock, AlertCircle, ChevronRight, Building2,
   RefreshCw, Copy, Check, BookOpen, UserCheck, BadgeCheck,
   TrendingDown, PieChart, Landmark, ArrowUpRight, ArrowDownLeft,
-  Filter, MoreHorizontal,
+  Filter, MoreHorizontal, Upload,
 } from "lucide-react";
 import {
-  useDB, formatINR, addNotification,
+  useDB, formatINR, addNotification, exportToCSV,
   type Vendor, type Investment, type Transaction,
 } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
@@ -90,8 +90,8 @@ function PaymentGateway({ vendor, onClose, onSuccess }: {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-accent/40 rounded-2xl p-4 border border-border/50">
-                  <div className="text-lg font-bold text-foreground">{vendor.returns}</div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mt-0.5">Returns p.a.</div>
+                   <div className="text-lg font-bold text-foreground">{vendor.returns}</div>
+                   <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mt-0.5">Returns p.a.</div>
                 </div>
                 <div className="bg-accent/40 rounded-2xl p-4 border border-border/50">
                    <div className="text-lg font-bold text-foreground">{vendor.tenure}</div>
@@ -213,6 +213,7 @@ function PaymentGateway({ vendor, onClose, onSuccess }: {
 
 function Portfolio() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const INVESTOR_ID = user?.id || 1;
   const [db] = useDB();
   const investor = db.investors.find(i => i.id === INVESTOR_ID);
@@ -227,8 +228,8 @@ function Portfolio() {
   if (!investor) return null;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 bg-mesh p-8 rounded-[3rem]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-3xl font-black text-foreground tracking-tight">Portfolio</h2>
           <p className="text-muted-foreground mt-1">Welcome back, {investor.name}. Your wealth is growing.</p>
@@ -241,24 +242,24 @@ function Portfolio() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card-elevated p-8 bg-gradient-to-br from-primary/10 to-transparent border-primary/20 relative overflow-hidden group">
-           <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500"><IndianRupee className="w-32 h-32" /></div>
-           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-70 mb-2">Total Invested</p>
-           <h3 className="text-4xl font-black text-foreground">{formatINR(metrics.total)}</h3>
-           <div className="mt-8 flex items-center gap-2 text-success font-bold text-sm bg-success/10 w-fit px-3 py-1 rounded-full"><TrendingUp className="w-4 h-4"/> +14.2% Growth</div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="reveal-card glass-premium p-10 relative overflow-hidden group">
+           <div className="absolute -right-6 -bottom-6 opacity-10 group-hover:scale-125 transition-transform duration-700 text-primary"><IndianRupee className="w-40 h-40" /></div>
+           <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] mb-4">Total Assets</p>
+           <h3 className="text-5xl font-black text-foreground tracking-tighter">{formatINR(metrics.total)}</h3>
+           <div className="mt-10 flex items-center gap-2 text-success font-black text-xs bg-success/10 w-fit px-4 py-2 rounded-full border border-success/20 animate-float"><TrendingUp className="w-4 h-4"/> +14.2% APY</div>
         </div>
-        <div className="card-elevated p-8 relative overflow-hidden group">
-           <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500"><TrendingUp className="w-32 h-32 text-success" /></div>
-           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-70 mb-2">Returns Earned</p>
-           <h3 className="text-4xl font-black text-success">{formatINR(metrics.earned)}</h3>
-           <p className="text-xs text-muted-foreground mt-8">Tax saved: <span className="font-bold text-foreground">₹2,420</span> this year</p>
+        <div className="reveal-card glass-premium p-10 relative overflow-hidden group">
+           <div className="absolute -right-6 -bottom-6 opacity-10 group-hover:scale-125 transition-transform duration-700 text-success"><TrendingUp className="w-40 h-40" /></div>
+           <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] mb-4">Realized Returns</p>
+           <h3 className="text-5xl font-black text-success tracking-tighter">{formatINR(metrics.earned)}</h3>
+           <p className="text-[10px] font-bold text-muted-foreground mt-10 uppercase tracking-widest">Efficiency: <span className="text-foreground">98.4%</span></p>
         </div>
-        <div className="card-elevated p-8 relative overflow-hidden group border-secondary/20">
-           <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500"><CalendarClock className="w-32 h-32 text-secondary" /></div>
-           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-70 mb-2">Next Payout</p>
-           <h3 className="text-4xl font-black text-foreground">Apr 1</h3>
-           <p className="text-xs text-muted-foreground mt-8">Est. amount: <span className="font-bold text-success">₹4,200</span></p>
+        <div className="reveal-card glass-premium p-10 relative overflow-hidden group">
+           <div className="absolute -right-6 -bottom-6 opacity-10 group-hover:scale-125 transition-transform duration-700 text-secondary"><CalendarClock className="w-40 h-40" /></div>
+           <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] mb-4">Estimated Payout</p>
+           <h3 className="text-5xl font-black text-foreground tracking-tighter">Apr 01</h3>
+           <p className="text-[10px] font-bold text-muted-foreground mt-10 uppercase tracking-widest">Liquidity: <span className="text-success font-black">HIGH</span></p>
         </div>
       </div>
 
@@ -266,7 +267,7 @@ function Portfolio() {
         <div className="lg:col-span-8 card-elevated p-8">
            <div className="flex justify-between items-center mb-10">
              <h4 className="text-xl font-bold flex items-center gap-2"><PieChart className="w-5 h-5 text-primary" /> Active Stakes</h4>
-             <Button variant="ghost" size="sm" className="text-xs">View Performance <ArrowRight className="w-4 h-4 ml-1"/></Button>
+             <Button variant="ghost" size="sm" className="text-xs" onClick={() => addNotification(db, { userId: INVESTOR_ID, userType: "investor", title: "Analytics Hub", message: "Portfolio performance visualization is being recalculated for Q2 2025.", type: "system", read: false, date: new Date().toLocaleDateString() })}>View Performance <ArrowRight className="w-4 h-4 ml-1"/></Button>
            </div>
            <div className="space-y-6">
              {myInvestments.length > 0 ? myInvestments.map(inv => {
@@ -327,15 +328,15 @@ function Portfolio() {
                    </div>
                  ))}
               </div>
-              <Button variant="outline" className="w-full mt-8 rounded-2xl text-xs font-bold tracking-widest uppercase">View All History</Button>
+              <Button variant="outline" className="w-full mt-8 rounded-2xl text-xs font-bold tracking-widest uppercase" onClick={() => navigate("/dashboard/investor/transactions")}>View All History</Button>
            </div>
 
-           <div className="card-elevated p-1 bg-primary text-white overflow-hidden relative group cursor-pointer">
+           <div className="reveal-card glass-premium p-1 bg-primary text-white overflow-hidden relative group cursor-pointer" onClick={() => addNotification(db, { userId: INVESTOR_ID, userType: "investor", title: "Waitlist Joined", message: "You are now on the waitlist for the Premium Samudaay Tier. We will contact you soon.", type: "system", read: false, date: new Date().toLocaleDateString() })}>
               <div className="absolute -right-4 -top-4 opacity-20"><TrendingUp className="w-32 h-32 rotate-12 group-hover:scale-110 transition-transform"/></div>
               <div className="p-8">
                 <h5 className="text-xl font-black mb-2 leading-none">Upgrade to <br/>Premium Plan</h5>
                 <p className="text-white/70 text-xs mb-6">Access exclusive 15%+ return deals and zero platform fees.</p>
-                <div className="flex items-center gap-2 text-xs font-bold">Learn More <ArrowRight className="w-4 h-4"/></div>
+                <div className="flex items-center gap-2 text-xs font-bold">Inquire Now <ArrowRight className="w-4 h-4"/></div>
               </div>
            </div>
         </div>
@@ -421,7 +422,7 @@ function Discover() {
                  </div>
                  <div className="flex gap-2">
                     <span className="px-3 py-1 rounded-full bg-accent text-[10px] font-black uppercase tracking-tighter text-muted-foreground">{v.category}</span>
-                    <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/5 text-amber-600 rounded-full text-[10px] font-black"><Star className="w-3 h-3 fill-amber-500"/>{v.rating}</div>
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/5 text-amber-600 rounded-full text-[10px] font-black"><Star className="w-3 h-3 fill-amber-500"/>{Number(v.rating).toFixed(1)}</div>
                  </div>
                </div>
                <h3 className="text-xl font-black text-foreground mb-2 group-hover:text-primary transition-colors">{v.name}</h3>
@@ -460,6 +461,14 @@ function Discover() {
 }
 
 function TrustKYC() {
+  const [db, setDB] = useDB();
+  const { user } = useAuth();
+  const INVESTOR_ID = user?.id || 1;
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = () => {
+    addNotification(db, { userId: INVESTOR_ID, userType: "investor", title: "Document Uploaded", message: "Your document is being reviewed by our compliance team.", type: "system", read: false, date: new Date().toLocaleDateString() });
+  };
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
        <div className="card-elevated p-10 bg-gradient-to-br from-primary/5 to-transparent border-primary/10 relative overflow-hidden">
@@ -489,18 +498,19 @@ function TrustKYC() {
                   </div>
                 ))}
              </div>
-             <Button variant="outline" className="w-full py-6 rounded-2xl font-bold"><Upload className="w-4 h-4 mr-2" /> Upload New Document</Button>
+             <input type="file" ref={fileRef} className="hidden" onChange={handleUpload} />
+             <Button variant="outline" className="w-full py-6 rounded-2xl font-bold" onClick={() => fileRef.current?.click()}><Upload className="w-4 h-4 mr-2" /> Upload New Document</Button>
           </div>
 
           <div className="card-elevated p-8">
              <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Shield className="w-5 h-5 text-success" /> Verification Log</h3>
              <div className="space-y-8 relative ml-3 before:absolute before:left-[-1px] before:top-2 before:bottom-2 before:w-px before:bg-border">
                 {[{t:"PAN Card Verified", d:"Mar 12, 2024", s:true}, {t:"Address Verification Success", d:"Mar 14, 2024", s:true}, {t:"Video KYC Completed", d:"Mar 15, 2024", s:true}, {t:"Auto-Investment Limit Upgrade", d:"Next Review...", s:false}].map((l, i) => (
-                  <div key={i} className="relative pl-8">
-                    <div className={`absolute left-[-5px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-card ${l.s ? "bg-success shadow-sm shadow-success" : "bg-accent"}`} />
-                    <div className="text-sm font-bold leading-none">{l.t}</div>
-                    <div className="text-[10px] text-muted-foreground font-medium mt-1 tracking-wider uppercase">{l.d}</div>
-                  </div>
+                   <div key={i} className="relative pl-8">
+                     <div className={`absolute left-[-5px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-card ${l.s ? "bg-success shadow-sm shadow-success" : "bg-accent"}`} />
+                     <div className="text-sm font-bold leading-none">{l.t}</div>
+                     <div className="text-[10px] text-muted-foreground font-medium mt-1 tracking-wider uppercase">{l.d}</div>
+                   </div>
                 ))}
              </div>
           </div>
@@ -519,7 +529,7 @@ function Transactions() {
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-black text-foreground">Transactions</h2>
-        <Button variant="outline" size="sm" className="rounded-xl"><Download className="w-4 h-4 mr-2" /> Export CSV</Button>
+        <Button variant="outline" size="sm" className="rounded-xl" onClick={() => exportToCSV(txns, "investor_transactions")}><Download className="w-4 h-4 mr-2" /> Export CSV</Button>
       </div>
 
       <div className="card-elevated overflow-hidden border-border/50">
@@ -566,14 +576,210 @@ export default function InvestorDashboard() {
         <Routes>
           <Route index element={<Portfolio/>}/>
           <Route path="discover" element={<Discover/>}/>
-          <Route path="investments" element={<Portfolio/>}/>
+          <Route path="investments" element={<MyInvestments/>}/>
           <Route path="transactions" element={<Transactions/>}/>
-          <Route path="agreements" element={<Portfolio/>}/>
+          <Route path="agreements" element={<InvestorAgreements/>}/>
           <Route path="kyc" element={<TrustKYC/>}/>
-          <Route path="community" element={<Portfolio/>}/>
-          <Route path="settings" element={<Portfolio/>}/>
+          <Route path="community" element={<InvestorCommunity/>}/>
+          <Route path="settings" element={<InvestorSettings/>}/>
         </Routes>
       </div>
     </DashboardLayout>
+  );
+}
+
+function MyInvestments() {
+  const { user } = useAuth();
+  const INVESTOR_ID = user?.id || 1;
+  const [db] = useDB();
+  const myInvestments = (db.investments || []).filter(i => i.investorId === INVESTOR_ID);
+
+  return (
+    <div className="space-y-10 animate-in fade-in duration-1000 bg-mesh p-8 rounded-[3rem]">
+       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+             <h2 className="text-4xl font-black text-foreground tracking-tight">Active Stakes</h2>
+             <p className="text-muted-foreground font-medium mt-1">Management of your {myInvestments.length} live business investments.</p>
+          </div>
+          <Button variant="outline" className="rounded-2xl px-6 font-bold" onClick={() => exportToCSV(myInvestments, "my_investments")}><Download className="w-4 h-4 mr-2"/> Export Portfolio</Button>
+       </div>
+
+       <div className="grid gap-6">
+          {myInvestments.map(inv => {
+            const vendor = db.vendors.find(v => v.id === inv.vendorId);
+            return (
+              <div key={inv.id} className="card-elevated p-8 hover:border-primary/20 transition-all group">
+                 <div className="flex flex-col lg:flex-row lg:items-center gap-10">
+                    <div className="flex gap-6 items-center lg:w-1/3">
+                       <div className="w-20 h-20 rounded-[2rem] bg-white border border-border shadow-sm flex items-center justify-center text-primary font-black text-3xl group-hover:scale-110 transition-transform">
+                          {vendor?.name[0]}
+                       </div>
+                       <div>
+                          <h4 className="text-2xl font-bold">{vendor?.name}</h4>
+                          <p className="text-muted-foreground text-sm font-medium">{vendor?.category} · {vendor?.location}</p>
+                       </div>
+                    </div>
+
+                    <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-6">
+                       <div><p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-1">Staked</p><p className="text-xl font-black">{formatINR(inv.amount)}</p></div>
+                       <div><p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-1">Returns</p><p className="text-xl font-black text-success">{vendor?.returns}</p></div>
+                       <div><p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-1">Earned</p><p className="text-xl font-black text-primary">+{formatINR(inv.returnsEarned)}</p></div>
+                       <div><p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-1">Next Pay</p><p className="text-xl font-black text-foreground">{inv.nextPayout}</p></div>
+                    </div>
+
+                    <div className="lg:w-1/4">
+                       <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+                          <span className="text-muted-foreground">Tenure</span>
+                          <span className="text-primary">{inv.completedMonths} / {inv.tenureMonths} mo</span>
+                       </div>
+                       <ProgressBar value={inv.completedMonths} max={inv.tenureMonths} className="h-3" />
+                    </div>
+                 </div>
+              </div>
+            );
+          })}
+          {myInvestments.length === 0 && <div className="py-20 text-center font-medium text-muted-foreground">No active investments found. <span className="text-primary cursor-pointer underline">Browse Businesses</span></div>}
+       </div>
+    </div>
+  );
+}
+
+function InvestorAgreements() {
+  const { user } = useAuth();
+  const INVESTOR_ID = user?.id || 1;
+  const [db] = useDB();
+  const myInvestments = (db.investments || []).filter(i => i.investorId === INVESTOR_ID);
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-700 bg-mesh p-8 rounded-[3rem]">
+       <h2 className="text-4xl font-black text-foreground tracking-tight">Legal Repository</h2>
+       <p className="text-muted-foreground font-medium -mt-4">Signed Master Community Agreements (MCA) for all your active stakes.</p>
+       
+       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {myInvestments.length > 0 ? myInvestments.map(inv => {
+            const vendor = db.vendors.find(v => v.id === inv.vendorId);
+            return (
+              <div key={inv.id} className="card-elevated p-8 flex flex-col gap-8 hover:border-primary/40 transition-all group">
+                 <div className="flex gap-5 items-start">
+                    <div className="w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 transform group-hover:rotate-6 flex-shrink-0">
+                       <FileText className="w-7 h-7" />
+                    </div>
+                    <div className="min-w-0">
+                       <h4 className="font-bold text-lg truncate">{vendor?.name} Contract</h4>
+                       <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Reference: {inv.txnId}</p>
+                    </div>
+                 </div>
+                 <div className="pt-4 border-t border-border/50 flex gap-3">
+                    <Button variant="outline" className="flex-1 rounded-xl text-xs font-bold" onClick={() => addNotification(db, { userId: INVESTOR_ID, userType: "investor", title: "Generating PDF", message: "Digital signature validated for " + vendor?.name + ". Preview is being prepared.", type: "system", read: false, date: new Date().toLocaleDateString() })}>Preview</Button>
+                    <Button variant="ghost" className="rounded-xl px-4" onClick={() => addNotification(db, { userId: INVESTOR_ID, userType: "investor", title: "Download Started", message: "Merchant Agreement MCA-420-99... is downloading.", type: "system", read: false, date: new Date().toLocaleDateString() })}><Download className="w-4 h-4"/></Button>
+                 </div>
+              </div>
+            );
+          }) : (
+            <div className="col-span-full py-20 text-center text-muted-foreground border-2 border-dashed border-border rounded-[3rem]">
+               No agreements found. Agreements are generated upon your first investment.
+            </div>
+          )}
+       </div>
+    </div>
+  );
+}
+
+function InvestorCommunity() {
+  return (
+    <div className="space-y-8 animate-in fade-in duration-700 bg-mesh p-8 rounded-[3rem]">
+       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+         <div>
+            <h2 className="text-4xl font-black text-foreground tracking-tight">Local Newsroom</h2>
+            <p className="text-muted-foreground font-medium mt-1">Updates and milestones from businesses you believe in.</p>
+         </div>
+         <Button variant="hero" className="rounded-2xl px-8 shadow-xl shadow-primary/20">Join Discussion</Button>
+       </div>
+
+       <div className="grid lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8 space-y-6">
+             {["Organic Junction expands to new location", "TechFlow Solutions records 45% revenue growth", "Green Grocers now serving 5,000+ households"].map((news, i) => (
+               <div key={i} className="card-elevated p-10 group cursor-pointer hover:border-primary/30 transition-all">
+                  <div className="flex gap-4 items-center mb-6">
+                     <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full">Company Update</span>
+                     <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase italic">4 hours ago</span>
+                  </div>
+                  <h4 className="text-3xl font-black group-hover:text-primary transition-colors leading-tight mb-4 tracking-tight">{news}</h4>
+                  <p className="text-muted-foreground text-lg leading-relaxed">This growth phase is a testament to the community support we have received through Samudaay. Your investments have allowed us to scale inventory by 40% and hire 12 more local staff members...</p>
+                  <div className="mt-10 flex gap-8 items-center text-xs font-black uppercase tracking-widest text-muted-foreground">
+                     <span className="flex items-center gap-2 hover:text-primary transition-colors"><MessageCircle className="w-4 h-4 text-primary"/> 18 Comments</span>
+                     <span className="flex items-center gap-2 hover:text-primary transition-colors"><Copy className="w-4 h-4 text-primary"/> Share Update</span>
+                  </div>
+               </div>
+             ))}
+          </div>
+
+          <div className="lg:col-span-4 space-y-6">
+             <div className="card-elevated p-8 bg-card">
+                <h4 className="font-bold text-lg mb-6">Community Highlights</h4>
+                <div className="space-y-8">
+                   <div>
+                      <div className="flex justify-between text-xs font-black uppercase tracking-widest mb-2"><span className="text-muted-foreground">Local Jobs</span><span className="text-primary">+1,200</span></div>
+                      <ProgressBar value={65} max={100} className="h-2.5 rounded-full" />
+                   </div>
+                   <div>
+                      <div className="flex justify-between text-xs font-black uppercase tracking-widest mb-2"><span className="text-muted-foreground">Wealth Generated</span><span className="text-success">₹12.8M</span></div>
+                      <ProgressBar value={40} max={100} className="h-2.5 rounded-full" />
+                   </div>
+                </div>
+             </div>
+          </div>
+       </div>
+    </div>
+  );
+}
+
+function InvestorSettings() {
+  const { user } = useAuth();
+  const [db] = useDB();
+  const INVESTOR_ID = user?.id || 1;
+  const investor = db.investors.find(i => i.id === INVESTOR_ID);
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
+       <div className="card-elevated p-12 bg-mesh relative overflow-hidden border-border/50">
+          <div className="absolute top-0 right-0 p-12 opacity-5"><Settings className="w-48 h-48" /></div>
+          <div className="relative z-10 flex flex-col md:flex-row gap-10 items-center">
+             <div className="w-32 h-32 rounded-[2.5rem] bg-card border border-border shadow-2xl flex items-center justify-center text-primary font-black text-5xl shadow-primary/10">
+               {investor?.name?.[0]}
+             </div>
+             <div className="text-center md:text-left">
+                <h2 className="text-4xl font-black text-foreground tracking-tight">{investor?.name}</h2>
+                <p className="text-muted-foreground text-xl font-medium mt-1 uppercase tracking-widest">{investor?.plan} Tier Account</p>
+             </div>
+          </div>
+       </div>
+
+       <div className="grid md:grid-cols-2 gap-8">
+          <div className="card-elevated p-10 space-y-8">
+             <h3 className="text-xl font-bold flex items-center gap-3 font-black"><Smartphone className="w-6 h-6 text-primary" /> Account Profile</h3>
+             <div className="space-y-6">
+                <div><label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 block">Official Email</label><input className={inp} defaultValue={investor?.email} /></div>
+                <div><label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 block">Registered Phone</label><input className={inp} defaultValue={investor?.phone} /></div>
+                <div className="pt-4"><Button variant="hero" className="w-full rounded-2xl py-7 font-black uppercase tracking-wider shadow-lg shadow-primary/20 transition-all hover:scale-[1.02]">Save Profile Changes</Button></div>
+             </div>
+          </div>
+
+          <div className="card-elevated p-10 space-y-8">
+             <h3 className="text-xl font-bold flex items-center gap-3 font-black"><Shield className="w-6 h-6 text-secondary" /> Privacy & Security</h3>
+             <div className="space-y-6">
+                <div className="flex justify-between items-center p-5 rounded-3xl bg-primary/5 border border-primary/10">
+                   <div><p className="text-sm font-bold">Biometric Login</p><p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-tighter">Secure FaceID/TouchID Active</p></div>
+                   <div className="w-12 h-6 rounded-full bg-primary relative p-1 transition-all"><div className="absolute right-1 top-1 w-4 h-4 rounded-full bg-white"></div></div>
+                </div>
+                <div className="flex justify-between items-center p-5 rounded-3xl bg-accent/20 border border-border/50">
+                   <div><p className="text-sm font-bold">Public Analytics</p><p className="text-[10px] text-muted-foreground font-black uppercase mt-0.5 tracking-tighter">Anonymize data on billboards</p></div>
+                   <div className="w-12 h-6 rounded-full bg-muted relative p-1"><div className="absolute left-1 top-1 w-4 h-4 rounded-full bg-white shadow-sm"></div></div>
+                </div>
+                <div className="pt-4"><Button variant="outline" className="w-full rounded-2xl py-7 font-black uppercase tracking-wider border-2">Update Security Keys</Button></div>
+             </div>
+          </div>
+       </div>
+    </div>
   );
 }

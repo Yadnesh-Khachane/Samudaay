@@ -62,7 +62,15 @@ function DashboardSidebar({ navItems, groupLabel }: { navItems: NavItem[]; group
 export default function DashboardLayout({ children, navItems, groupLabel }: DashboardLayoutProps) {
   const location = useLocation();
   // Find the active nav item title
-  const activeItem = [...navItems].reverse().find((item) => location.pathname.startsWith(item.url));
+  // Find the most specific active nav item title
+  const activeItem = [...navItems].find((item) => {
+    // If it's a root path like /dashboard/jobs, use exact match logic or carefully check subpaths.
+    // A robust way in nested routes is to see if it's an exact match OR if the next char is a slash.
+    if (location.pathname === item.url) return true;
+    if (location.pathname.startsWith(item.url + "/")) return true;
+    return false;
+  }) || [...navItems].reverse().find((item) => location.pathname.startsWith(item.url));
+
   const pageTitle = activeItem?.title ?? groupLabel;
 
   return (

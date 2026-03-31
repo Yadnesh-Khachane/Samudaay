@@ -262,7 +262,7 @@ function Vendors() {
   const [deactivating, setDeactivating] = useState<number | null>(null);
   const [viewingDocs, setViewingDocs]   = useState<Vendor | null>(null);
 
-  const blank: Omit<Vendor,"id"> = { name:"",owner:"",email:"",phone:"",category:"Food",location:"",status:"Pending",goal:0,raised:0,returns:"",tenure:"",investors:0,description:"",gstNumber:"",bankAccount:"",joinedDate:new Date().toLocaleDateString("en-IN",{month:"short",year:"numeric"}),documents:[],is_active:true,minInvest:5000,maxInvest:200000,rating:4.5 };
+  const blank: Omit<Vendor,"id"> = { name:"",owner:"",email:"",phone:"",category:"Food",location:"",status:"Pending",goal:0,raised:0,returns:"",tenure:"",investors:0,description:"",gstNumber:"",bankAccount:"",joinedDate:new Date().toLocaleDateString("en-IN",{month:"short",year:"numeric"}),documents:[],is_active:true,minInvest:5000,maxInvest:200000,rating:4.5, walletBalance:0, updates:[], milestones:[], team:[] };
   const [draft, setDraft] = useState<Omit<Vendor,"id">>(blank);
 
   const vendors = db.vendors;
@@ -336,7 +336,7 @@ function Vendors() {
               </select>
             </Field>
             <Field label="Funding Goal"><input className={inp} type="number" value={editing.goal} onChange={e=>setEditing({...editing,goal:parseInt(e.target.value)||0})} /></Field>
-            <Field label="Returns Offered"><input className={inp} value={editing.totalReturns} onChange={e=>setEditing({...editing,totalReturns:e.target.value})} /></Field>
+            <Field label="Returns Offered"><input className={inp} value={editing.returns} onChange={e=>setEditing({...editing,returns:e.target.value})} /></Field>
             <Field label="Tenure"><input className={inp} value={editing.tenure} onChange={e=>setEditing({...editing,tenure:e.target.value})} /></Field>
             <Field label="GST Number"><input className={inp} value={editing.gstNumber} onChange={e=>setEditing({...editing,gstNumber:e.target.value})} /></Field>
             <Field label="Bank Account"><input className={inp} value={editing.bankAccount} onChange={e=>setEditing({...editing,bankAccount:e.target.value})} /></Field>
@@ -507,8 +507,8 @@ function Investors() {
             <Field label="Email"><input className={inp} value={editing.email} onChange={e=>setEditing({...editing,email:e.target.value})} /></Field>
             <Field label="Phone"><input className={inp} value={editing.phone} onChange={e=>setEditing({...editing,phone:e.target.value})} /></Field>
             <Field label="Location"><input className={inp} value={editing.location} onChange={e=>setEditing({...editing,location:e.target.value})} /></Field>
-            <Field label="Total Invested"><input className={inp} value={editing.totalInvested} onChange={e=>setEditing({...editing,totalInvested:e.target.value})} /></Field>
-            <Field label="Returns Earned"><input className={inp} value={editing.totalReturns} onChange={e=>setEditing({...editing,totalReturns:e.target.value})} /></Field>
+            <Field label="Total Invested"><input className={inp} type="number" value={editing.totalInvested} onChange={e=>setEditing({...editing,totalInvested:parseInt(e.target.value)||0})} /></Field>
+            <Field label="Returns Earned"><input className={inp} type="number" value={editing.totalReturns} onChange={e=>setEditing({...editing,totalReturns:parseInt(e.target.value)||0})} /></Field>
             <Field label="PAN Number"><input className={inp} value={editing.panNumber} onChange={e=>setEditing({...editing,panNumber:e.target.value})} /></Field>
             <Field label="Bank Account"><input className={inp} value={editing.bankAccount} onChange={e=>setEditing({...editing,bankAccount:e.target.value})} /></Field>
             <Field label="KYC Status">

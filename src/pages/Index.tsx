@@ -31,7 +31,7 @@ function Navbar() {
         
         <div className="hidden md:flex items-center gap-8 text-sm font-bold text-muted-foreground">
           <Link to="/how-it-works" className="hover:text-primary transition-colors">How It Works</Link>
-          <Link to="/discover" className="hover:text-primary transition-colors">Discover</Link>
+          <Link to="/dashboard/investor" className="hover:text-primary transition-colors">Discover</Link>
           <Link to="/about" className="hover:text-primary transition-colors">About</Link>
           <Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link>
         </div>
@@ -63,7 +63,7 @@ function Navbar() {
 
 function Hero() {
   return (
-    <section className="relative pt-40 pb-32 overflow-hidden bg-background">
+    <section className="relative pt-40 pb-32 overflow-hidden bg-mesh min-h-screen flex items-center justify-center">
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
            <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-primary/5 text-primary text-xs font-black uppercase tracking-widest mb-10 border border-primary/10 animate-in fade-in slide-in-from-bottom-2 duration-700">

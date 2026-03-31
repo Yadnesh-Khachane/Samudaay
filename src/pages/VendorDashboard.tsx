@@ -11,7 +11,7 @@ import {
   Users2, LifeBuoy, MessageSquare, ArrowUpRight, ArrowDownLeft,
   ChevronRight, Search, Filter, MoreHorizontal,
 } from "lucide-react";
-import { useDB, formatINR, addNotification } from "@/lib/db";
+import { useDB, formatINR, addNotification, exportToCSV } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 
 const navItems = [
@@ -42,7 +42,7 @@ function Overview() {
   if (!vendor) return null;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000 bg-mesh p-8 rounded-[3rem]">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -122,7 +122,7 @@ function Overview() {
                 </div>
               </div>
             )) : <div className="text-center py-8 text-muted-foreground">No recent activity.</div>}
-            <Button variant="ghost" className="w-full text-sm text-primary" size="sm">
+            <Button variant="ghost" className="w-full text-sm text-primary" size="sm" onClick={() => navigate("/dashboard/vendor/investors")}>
               View All Activity <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
@@ -155,7 +155,7 @@ function Overview() {
                     <td className="py-4 text-success font-semibold">{formatINR(monthly)}</td>
                     <td className="py-4 text-muted-foreground">{inv.nextPayout}</td>
                     <td className="py-4 text-right">
-                      <Button variant="outline" size="sm" className="h-7 px-2 text-[10px] font-bold">Pay Now</Button>
+                      <Button variant="outline" size="sm" className="h-7 px-2 text-[10px] font-bold" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Monthly Payout", message: `Successfully paid monthly returns to Investor #${inv.investorId}.`, type: "payment", read: false, date: new Date().toLocaleDateString() })}>Pay Now</Button>
                     </td>
                   </tr>
                 );
@@ -380,8 +380,8 @@ function HiringSuite() {
               </div>
               <div className="flex items-center gap-3">
                 <StatusBadge status={job.status === "Active" ? "verified" : "expired"} />
-                <Button variant="ghost" size="icon"><Pencil className="w-4 h-4" /></Button>
-                <Button variant="ghost" size="icon" className="text-destructive"><X className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Editor Locked", message: "Job descriptions are locked after receiving applicants. Contact support to edit.", type: "system", read: false, date: new Date().toLocaleDateString() })}><Pencil className="w-4 h-4" /></Button>
+                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Archive Role", message: "Job deletion is restricted while applications are active. Archive instead?", type: "system", read: false, date: new Date().toLocaleDateString() })}><X className="w-4 h-4" /></Button>
               </div>
             </div>
           ))}
@@ -422,7 +422,7 @@ function HiringSuite() {
                      <option>Rejected</option>
                      <option>Hired</option>
                    </select>
-                   <Button variant="outline" size="sm">View Profile</Button>
+                   <Button variant="outline" size="sm" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Applicant Profile", message: `Applicant ${seeker?.name}'s full history is restricted on the community tier.`, type: "system", read: false, date: new Date().toLocaleDateString() })}>View Profile</Button>
                  </div>
                </div>
              );
@@ -488,7 +488,10 @@ function WalletAndPayouts() {
         <div className="card-elevated p-6">
           <div className="flex justify-between items-center mb-6">
             <h4 className="font-bold">Payouts to Investors</h4>
-            <Button variant="outline" size="sm" onClick={payReturns}>Pay All Monthly Returns</Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => exportToCSV(myInvestments, "vendor_investors")}><Download className="w-4 h-4 mr-2"/> Export CSV</Button>
+              <Button variant="outline" size="sm" onClick={payReturns}>Pay All Monthly Returns</Button>
+            </div>
           </div>
           <div className="space-y-4">
             {myInvestments.map(inv => (
@@ -517,18 +520,18 @@ function WalletAndPayouts() {
                 <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600 font-bold italic">RP</div>
                 <div><h5 className="font-bold text-sm">Razorpay Integration</h5><p className="text-xs text-muted-foreground">Status: <span className="text-success font-medium">Connected</span></p></div>
               </div>
-              <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/5">Configure</Button>
+              <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/5" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Gateway Locked", message: "Razorpay configurations are managed by Samudaay Admin.", type: "system", read: false, date: new Date().toLocaleDateString() })}>Configure</Button>
             </div>
-             <div className="p-4 rounded-2xl bg-card border border-border flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-card border border-border flex items-center justify-between">
               <div className="flex gap-3 items-center">
                 <div className="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-600 font-bold">St</div>
                 <div><h5 className="font-bold text-sm">Stripe Connect</h5><p className="text-xs text-muted-foreground">Link your international account</p></div>
               </div>
-              <Button variant="outline" size="sm">Connect</Button>
+              <Button variant="outline" size="sm" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Invite Only", message: "Stripe Connect is currently available for Premium plan users only.", type: "system", read: false, date: new Date().toLocaleDateString() })}>Connect</Button>
             </div>
              <div className="p-4 rounded-2xl bg-accent/20 border border-dashed border-border text-center">
               <p className="text-xs text-muted-foreground mb-2">Want to receive payments directly?</p>
-              <Button variant="ghost" size="sm" className="h-7 text-primary text-[10px]"><Plus className="w-3 h-3 mr-1" /> Add Payment Gateway</Button>
+              <Button variant="ghost" size="sm" className="h-7 text-primary text-[10px]" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Limit Reached", message: "Contact admin to add additional payment gateways.", type: "system", read: false, date: new Date().toLocaleDateString() })}><Plus className="w-3 h-3 mr-1" /> Add Payment Gateway</Button>
             </div>
           </div>
         </div>
@@ -624,24 +627,27 @@ function TrustVerification() {
 }
 
 function TeamManagement() {
+  const { user } = useAuth();
+  const VENDOR_ID = user?.id || 1;
+  const [db] = useDB();
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-bold">Your Team</h3>
-        <Button variant="hero" size="sm"><Plus className="w-4 h-4 mr-2" /> Add Member</Button>
-      </div>
+    <div className="space-y-6 animate-in fade-in duration-500">
+       <div className="flex justify-between items-center">
+         <h3 className="text-xl font-bold">Your Team</h3>
+         <Button variant="hero" size="sm" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Limit Reached", message: "Free Business Tier allows only 3 active team members.", type: "system", read: false, date: new Date().toLocaleDateString() })}><Plus className="w-4 h-4 mr-2" /> Add Member</Button>
+       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[{name: "Amit Patel", role: "Business Owner", email: "amit@freshfarms.com"}, {name: "Rajesh Kumar", role: "Store Manager", email: "rajesh@freshfarms.com"}, {name: "Sita Devi", role: "Accountant", email: "sita@freshfarms.com"}].map(m => (
           <div key={m.email} className="card-elevated p-6 flex flex-col items-center text-center">
             <div className="w-16 h-16 rounded-3xl bg-secondary/10 flex items-center justify-center text-secondary font-bold text-xl mb-4">
               {m.name.split(" ").map(n=>n[0]).join("")}
             </div>
-            <h4 className="font-bold">{m.name}</h4>
-            <p className="text-xs text-primary font-semibold mt-1 uppercase tracking-wider">{m.role}</p>
-            <p className="text-sm text-muted-foreground mt-1">{m.email}</p>
+            <h4 className="font-bold text-foreground">{m.name}</h4>
+            <p className="text-[10px] text-primary font-bold mt-1 uppercase tracking-widest">{m.role}</p>
+            <p className="text-xs text-muted-foreground mt-1">{m.email}</p>
             <div className="flex gap-2 mt-6 w-full">
-              <Button variant="outline" className="flex-1 text-xs" size="sm">Manage</Button>
-              <Button variant="ghost" className="flex-1 text-xs text-destructive" size="sm">Remove</Button>
+              <Button variant="outline" className="flex-1 text-xs" size="sm" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Access Denied", message: "Only the primary business owner can manage team roles.", type: "system", read: false, date: new Date().toLocaleDateString() })}>Manage</Button>
+              <Button variant="ghost" className="flex-1 text-xs text-destructive hover:bg-destructive/10" size="sm" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Critical Action", message: "Business Owner cannot be removed from the team registry.", type: "system", read: false, date: new Date().toLocaleDateString() })}>Remove</Button>
             </div>
           </div>
         ))}
@@ -650,7 +656,129 @@ function TeamManagement() {
   );
 }
 
+function VendorInvestors() {
+  const { user } = useAuth();
+  const VENDOR_ID = user?.id || 1;
+  const [db] = useDB();
+  const myInvestments = db.investments.filter(i => i.vendorId === VENDOR_ID);
+  
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-xl font-bold">Business Backers</h3>
+          <p className="text-sm text-muted-foreground">Detailed overview of all individuals invested in your business.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => exportToCSV(myInvestments, "my_investors")}>
+          <Download className="w-4 h-4 mr-2" /> Export Backer List
+        </Button>
+      </div>
+
+      <div className="card-elevated overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-muted-foreground border-b border-border bg-accent/30">
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px]">Backer ID</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px]">Date Invested</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px]">Capital</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px]">Returns Paid</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px]">Status</th>
+              <th className="p-4 text-right font-semibold uppercase tracking-wider text-[10px]">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {myInvestments.map(inv => (
+              <tr key={inv.id} className="border-b border-border/50 last:border-0 hover:bg-accent/20 transition-colors">
+                <td className="p-4 font-medium text-foreground">Investor #{inv.investorId}</td>
+                <td className="p-4 text-muted-foreground">{inv.date}</td>
+                <td className="p-4 font-bold text-foreground">{formatINR(inv.amount)}</td>
+                <td className="p-4 text-success font-semibold">{formatINR(inv.returnsEarned)}</td>
+                <td className="p-4">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${inv.status === "Active" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                    {inv.status.toUpperCase()}
+                  </span>
+                </td>
+                <td className="p-4 text-right">
+                  <Button variant="ghost" size="sm" className="h-8 text-primary" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Information Restricted", message: "Direct contact with community investors is restricted for anonymity.", type: "system", read: false, date: new Date().toLocaleDateString() })}>
+                    <MessageSquare className="w-4 h-4" />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function VendorAnalytics() {
+  const months = ["Nov", "Dec", "Jan", "Feb", "Mar"];
+  const visitorData = [2400, 3100, 2800, 4200, 5800];
+  const fundingData = [1.2, 0.8, 1.5, 2.1, 3.4];
+  const maxVis = Math.max(...visitorData);
+  const maxFun = Math.max(...fundingData);
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="flex justify-between items-center bg-card p-6 rounded-3xl border border-border">
+        <div>
+          <h3 className="text-xl font-bold">Business Insights</h3>
+          <p className="text-sm text-muted-foreground">Monthly growth and campaign engagement metrics.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="rounded-xl">Daily</Button>
+          <Button variant="hero" size="sm" className="rounded-xl">Monthly</Button>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="card-elevated p-8">
+          <h4 className="font-bold mb-8 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-success" /> Campaign Visits
+          </h4>
+          <div className="flex items-end gap-4 h-48 px-2">
+            {months.map((m, i) => (
+              <div key={m} className="flex-1 flex flex-col items-center gap-2 group">
+                <div className="w-full bg-accent/40 rounded-t-xl relative overflow-hidden group-hover:bg-accent/60 transition-colors" style={{ height: `${(visitorData[i]/maxVis)*100}%` }}>
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
+                </div>
+                <span className="text-[10px] font-bold text-muted-foreground">{m}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 flex justify-between text-xs font-semibold">
+            <span className="text-muted-foreground">Total Views: <span className="text-foreground">18.3K</span></span>
+            <span className="text-success text-xs flex items-center gap-1">+24% <ArrowUpRight className="w-3 h-3"/></span>
+          </div>
+        </div>
+
+        <div className="card-elevated p-8">
+          <h4 className="font-bold mb-8 flex items-center gap-2">
+            <IndianRupee className="w-5 h-5 text-primary" /> Funding Velocity (₹L)
+          </h4>
+          <div className="flex items-end gap-8 h-48 px-4">
+            {months.map((m, i) => (
+              <div key={m} className="flex-1 flex flex-col items-center gap-2 group">
+                <div className="w-full bg-primary/20 rounded-t-xl group-hover:bg-primary/30 transition-all duration-300" style={{ height: `${(fundingData[i]/maxFun)*100}%` }} />
+                <span className="text-[10px] font-bold text-muted-foreground">{m}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 flex justify-between text-xs font-semibold text-muted-foreground">
+            <span>Avg. Ticket Size: <span className="text-foreground">₹12,400</span></span>
+            <span>Conv. Rate: <span className="text-foreground">4.2%</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SupportHub() {
+  const { user } = useAuth();
+  const VENDOR_ID = user?.id || 1;
+  const [db] = useDB();
   return (
     <div className="max-w-4xl mx-auto space-y-6">
        <div className="card-elevated p-8 text-center bg-gradient-to-b from-card to-accent/20">
@@ -660,8 +788,8 @@ function SupportHub() {
          <h2 className="text-2xl font-bold">How can we help?</h2>
          <p className="text-muted-foreground mt-2 max-w-md mx-auto">Get in touch with our support team or browse our help center for common issues.</p>
          <div className="flex gap-3 justify-center mt-8">
-           <Button variant="hero" className="px-8"><MessageSquare className="w-4 h-4 mr-2" /> Start Live Chat</Button>
-           <Button variant="outline" className="px-8 flex items-center">Open Help Center <ArrowUpRight className="w-4 h-4 ml-2" /></Button>
+           <Button variant="hero" className="px-8" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Connecting...", message: "Searching for an available community support agent.", type: "system", read: false, date: new Date().toLocaleDateString() })}><MessageSquare className="w-4 h-4 mr-2" /> Start Live Chat</Button>
+           <Button variant="outline" className="px-8 flex items-center" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Help Center", message: "The comprehensive help center documentation is coming soon.", type: "system", read: false, date: new Date().toLocaleDateString() })}>Open Help Center <ArrowUpRight className="w-4 h-4 ml-2" /></Button>
          </div>
        </div>
 
@@ -728,12 +856,12 @@ function VendorSettings() {
         <div className="card-elevated p-6 border-destructive/20 bg-destructive/[0.02]">
           <h4 className="font-bold text-destructive">Danger Zone</h4>
           <p className="text-xs text-muted-foreground mt-1 mb-6">Deactivating your account will pause all active campaigns and job listings.</p>
-          <Button variant="outline" className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white transition-all font-bold">Deactivate Business Profile</Button>
+          <Button variant="outline" className="w-full border-destructive text-destructive hover:bg-destructive hover:text-white transition-all font-bold" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Restricted", message: "Active returns detected. Clear all settlements before deactivating profile.", type: "system", read: false, date: new Date().toLocaleDateString() })}>Deactivate Business Profile</Button>
         </div>
         <div className="card-elevated p-6">
            <h4 className="font-bold">Security</h4>
            <p className="text-xs text-muted-foreground mt-1 mb-6">Update your password or enable two-factor authentication.</p>
-           <Button variant="outline" className="w-full font-bold">Update Password</Button>
+           <Button variant="outline" className="w-full font-bold" onClick={() => addNotification(db, { userId: VENDOR_ID, userType: "vendor", title: "Email Sent", message: "A secure password reset link has been dispatched to your email.", type: "system", read: false, date: new Date().toLocaleDateString() })}>Update Password</Button>
         </div>
       </div>
     </div>
@@ -748,11 +876,11 @@ export default function VendorDashboard() {
           <Route index element={<Overview/>}/>
           <Route path="campaign" element={<CampaignManager/>}/>
           <Route path="hiring" element={<HiringSuite/>}/>
-          <Route path="investors" element={<Overview/>}/> {/* Linked to overview or dedicated list */}
+          <Route path="investors" element={<VendorInvestors/>}/>
           <Route path="wallet" element={<WalletAndPayouts/>}/>
           <Route path="trust" element={<TrustVerification/>}/>
           <Route path="team" element={<TeamManagement/>}/>
-          <Route path="analytics" element={<Overview/>}/> {/* Placeholder */}
+          <Route path="analytics" element={<VendorAnalytics/>}/>
           <Route path="support" element={<SupportHub/>}/>
           <Route path="settings" element={<VendorSettings/>}/>
         </Routes>
