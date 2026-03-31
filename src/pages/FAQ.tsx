@@ -1,0 +1,21 @@
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Users, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
+function Nav(){return(<nav className="sticky top-0 z-50 bg-card/90 backdrop-blur-lg border-b border-border"><div className="container mx-auto flex items-center justify-between h-16 px-4"><Link to="/" className="flex items-center gap-2"><div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center"><Users className="w-5 h-5 text-primary-foreground"/></div><span className="text-xl font-bold text-foreground">Samudaay</span></Link><div className="flex gap-3"><Button variant="ghost" size="sm" asChild><Link to="/login">Log In</Link></Button><Button variant="hero" size="sm" asChild><Link to="/register">Join Free</Link></Button></div></div></nav>);}
+const faqs=[
+  {q:"What is Samudaay?",a:"Samudaay is a community investment platform that connects verified local businesses with individual investors. Investors earn 8-15% annual returns while helping local businesses grow and create jobs."},
+  {q:"Is my investment safe?",a:"All businesses on Samudaay are KYC-verified with audited financials, GST certificates, and bank statements. Every investment is backed by a legally valid e-signed agreement. However, like all investments, there is inherent risk and past returns don't guarantee future results."},
+  {q:"What is the minimum investment?",a:"The minimum investment is ₹5,000 per business. You can diversify across multiple businesses to spread risk."},
+  {q:"How and when do I receive returns?",a:"Returns are credited monthly to your registered bank account. You'll receive a notification each time a return is processed."},
+  {q:"How does KYC work?",a:"KYC requires you to upload your PAN card and Aadhaar card. Our team verifies these within 24 hours. Once verified, you can invest in any available campaign."},
+  {q:"What payment methods are accepted?",a:"We accept UPI (GPay, PhonePe, Paytm, BHIM), Credit/Debit cards (Visa, Mastercard, RuPay), and Net Banking from all major banks."},
+  {q:"Can I withdraw my investment early?",a:"Investments are locked for the tenure period as agreed. Early withdrawal is not typically available. Please review the investment terms before investing."},
+  {q:"How do I list my business?",a:"Register as a Business Owner, complete your profile, submit documents for verification, and set your campaign parameters. Verification takes 3 working days."},
+  {q:"Are there any fees?",a:"Samudaay charges a 2% platform fee on returns earned. There are no upfront fees for investors. Business owners pay a monthly subscription (₹999 Basic or ₹2,499 Pro)."},
+  {q:"What happens if a business defaults?",a:"In case of default, Samudaay initiates a formal recovery process. We have a dedicated grievance mechanism and legal team. We recommend diversifying investments to manage this risk."},
+];
+export default function FAQ(){
+  const [open,setOpen]=useState<number|null>(null);
+  return(<div className="min-h-screen bg-background"><Nav/><div className="container mx-auto px-4 py-16 max-w-3xl"><div className="text-center mb-12"><h1 className="text-5xl font-bold text-foreground mb-4">Frequently Asked Questions</h1><p className="text-xl text-muted-foreground">Everything you need to know about Samudaay.</p></div><div className="space-y-3">{faqs.map((f,i)=>(<div key={i} className="card-elevated overflow-hidden"><button onClick={()=>setOpen(open===i?null:i)} className="w-full flex items-center justify-between p-5 text-left"><span className="font-semibold text-foreground">{f.q}</span>{open===i?<ChevronUp className="w-5 h-5 text-primary shrink-0"/>:<ChevronDown className="w-5 h-5 text-muted-foreground shrink-0"/>}</button>{open===i&&<div className="px-5 pb-5 text-muted-foreground text-sm leading-relaxed border-t border-border pt-4">{f.a}</div>}</div>))}</div><div className="mt-12 p-8 bg-primary/5 rounded-2xl border border-primary/20 text-center"><h2 className="text-xl font-bold text-foreground mb-3">Still have questions?</h2><p className="text-muted-foreground mb-4">Our support team is happy to help.</p><Button variant="hero" asChild><Link to="/contact">Contact Support</Link></Button></div></div></div>);
+}

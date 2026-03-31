@@ -1,0 +1,15 @@
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Users } from "lucide-react";
+function Nav(){return(<nav className="sticky top-0 z-50 bg-card/90 backdrop-blur-lg border-b border-border"><div className="container mx-auto flex items-center justify-between h-16 px-4"><Link to="/" className="flex items-center gap-2"><div className="w-9 h-9 rounded-xl gradient-primary flex items-center justify-center"><Users className="w-5 h-5 text-primary-foreground"/></div><span className="text-xl font-bold text-foreground">Samudaay</span></Link><Button variant="hero" size="sm" asChild><Link to="/register">Join Free</Link></Button></div></nav>);}
+export default function Terms(){return(<div className="min-h-screen bg-background"><Nav/><div className="container mx-auto px-4 py-16 max-w-3xl"><h1 className="text-4xl font-bold text-foreground mb-2">Terms of Service</h1><p className="text-muted-foreground mb-8">Last updated: March 22, 2026</p><div className="space-y-8">{[{h:"1. Acceptance of Terms",p:"By accessing or using Samudaay, you agree to be bound by these Terms. If you do not agree, do not use the platform."},
+{h:"2. Eligibility",p:"You must be at least 18 years of age and a resident of India to use Samudaay. You must complete KYC verification before making any investments."},
+{h:"3. Investment Risk",p:"Investments in local businesses carry risk. Returns are not guaranteed. Past performance does not indicate future results. You may lose some or all of your invested capital. Invest only what you can afford to lose."},
+{h:"4. Platform Role",p:"Samudaay acts as a marketplace and technology platform. We facilitate connections between investors and businesses but are not a lender, bank, or financial advisor. Investment decisions are solely your responsibility."},
+{h:"5. KYC & Compliance",p:"You agree to provide accurate KYC information. Providing false information is a violation of these terms and may result in account termination and legal action."},
+{h:"6. Payments & Returns",p:"Payments are processed through secure third-party payment gateways. Returns are credited monthly. Samudaay charges a 2% platform fee on returns. Taxes on investment income are your responsibility."},
+{h:"7. Prohibited Activities",p:"You may not use the platform for money laundering, fraudulent activities, impersonation, or any activity that violates Indian law."},
+{h:"8. Termination",p:"Samudaay reserves the right to terminate accounts that violate these terms. Active investments will be settled per their agreement terms before termination."},
+{h:"9. Governing Law",p:"These terms are governed by the laws of India. Disputes shall be subject to the jurisdiction of courts in Mumbai, Maharashtra."},
+{h:"10. Contact",p:"For legal matters: legal@samudaay.com | Samudaay Technologies Pvt. Ltd., Andheri West, Mumbai – 400053."},
+].map(s=>(<div key={s.h}><h2 className="text-xl font-bold mb-3 text-foreground">{s.h}</h2><p className="text-muted-foreground leading-relaxed">{s.p}</p></div>))}</div></div></div>);}
