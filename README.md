@@ -1,4 +1,4 @@
-# Samudaay — Fully-Fledged Community Investment Platform
+# Samudaay — Fully-Fledged Community Investment Platform [Fintech MVP]
 
 A complete, commercial-grade React/TypeScript web application connecting local business vendors, community investors, and job seekers.
 
